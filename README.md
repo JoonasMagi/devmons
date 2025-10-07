@@ -52,12 +52,39 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Activity timeline for all changes
 - Reporter automatically set to creator
 
+#### User Story #25: Login and Registration UI
+- Login page with form validation
+- Registration page with password strength validation
+- JWT token management
+- Protected routes with auto-redirect
+- Responsive design
+
+#### User Story #26: Dashboard and Project Overview UI
+- Responsive project cards grid (1/2/3 columns)
+- Project creation modal with validation
+- Loading skeleton states
+- Collapsible sidebar navigation
+- User menu with profile, settings, logout
+- Keyboard shortcuts (Cmd/Ctrl + B)
+- Active route highlighting
+
+#### User Story #27: Kanban Board UI
+- Board visualization with workflow columns
+- Drag-and-drop cards between columns (@dnd-kit)
+- Issue cards with type icons, priority indicators, labels
+- Assignee avatars and story points
+- Search by title/key
+- Filter by assignee, label, type, priority
+- Keyboard navigation (/, c)
+- Toast notifications for updates
+- Optimistic UI updates
+
 ### 🚧 Planned Features
-- Kanban board visualization
+- Issue detail modal with editing
 - Sprint planning and management
 - Comments on issues
 - File attachments
-- Notifications
+- Real-time updates (WebSocket)
 - Reporting and analytics
 
 ## 🛠️ Technology Stack
@@ -80,6 +107,10 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **React Query** - Server state management
 - **Zustand** - Client state management
 - **Axios** - HTTP client
+- **@dnd-kit** - Drag-and-drop functionality
+- **React Hot Toast** - Toast notifications
+- **React Hook Form** - Form management
+- **Lucide React** - Icon library
 
 ### Testing
 - **JUnit 5** - Unit testing
