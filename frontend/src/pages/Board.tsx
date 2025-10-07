@@ -8,9 +8,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragStartEvent,
-  DragEndEvent,
 } from '@dnd-kit/core';
+import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { ArrowLeft, Settings, Search, Filter, Loader2, X } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { issueService } from '../services/issueService';

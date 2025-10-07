@@ -50,20 +50,20 @@ export function Login() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Username */}
+            {/* Username or Email */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+              <label htmlFor="usernameOrEmail" className="block text-sm font-medium text-gray-700 mb-2">
+                Username or Email
               </label>
               <input
-                {...register('username', { required: 'Username is required' })}
+                {...register('usernameOrEmail', { required: 'Username or email is required' })}
                 type="text"
-                id="username"
+                id="usernameOrEmail"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                placeholder="Enter your username"
+                placeholder="Enter your username or email"
               />
-              {errors.username && (
-                <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
+              {errors.usernameOrEmail && (
+                <p className="mt-1 text-sm text-red-600">{errors.usernameOrEmail.message}</p>
               )}
             </div>
 
