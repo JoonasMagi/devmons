@@ -4,21 +4,31 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 
 ## 🎯 Features
 
-### ✅ Implemented (User Story #1)
-- **User Registration and Authentication**
-  - Secure user registration with email verification
-  - Login with JWT token-based authentication (8-hour expiration)
-  - Password reset functionality
-  - Account lockout after 5 failed login attempts
-  - Bcrypt password hashing
-  - Password requirements: 12+ characters, mixed case, numbers, special characters
+### ✅ Implemented
+
+#### User Story #1: User Registration and Authentication
+- Secure user registration with email verification
+- Login with JWT token-based authentication (8-hour expiration)
+- Password reset functionality
+- Account lockout after 5 failed login attempts
+- Bcrypt password hashing
+- Password requirements: 12+ characters, mixed case, numbers, special characters
+
+#### User Story #2: Project Creation and Management
+- Create projects with unique keys (2-10 uppercase letters)
+- Default board creation automatically
+- Default workflow states (Backlog → To Do → In Progress → Review → Testing → Done)
+- Default issue types (Story, Bug, Task, Epic)
+- Update project name and description
+- Archive and restore projects
+- Create custom labels with colors
+- Project owner permissions and access control
 
 ### 🚧 Planned Features
-- Project creation and management
 - Issue/ticket tracking
-- Kanban boards
+- Kanban board visualization
 - Sprint planning and management
-- Team collaboration
+- Team member invitations
 - Notifications
 - Reporting and analytics
 
@@ -159,6 +169,105 @@ Content-Type: application/json
   "token": "reset_token",
   "newPassword": "NewSecurePass123!"
 }
+```
+
+### Project Endpoints
+
+**Note:** All project endpoints require authentication. Include JWT token in Authorization header:
+```
+Authorization: Bearer {your_jwt_token}
+```
+
+#### Create Project
+```http
+POST /api/projects
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "name": "My Project",
+  "key": "MYPROJ",
+  "description": "Project description"
+}
+```
+
+Response:
+```json
+{
+  "id": 1,
+  "name": "My Project",
+  "key": "MYPROJ",
+  "description": "Project description",
+  "ownerId": 1,
+  "ownerUsername": "johndoe",
+  "createdAt": "2025-10-07T21:00:00",
+  "archived": false,
+  "memberCount": 1
+}
+```
+
+#### Get All Projects
+```http
+GET /api/projects
+Authorization: Bearer {token}
+```
+
+Returns list of all projects where user is owner or member.
+
+#### Get Project by ID
+```http
+GET /api/projects/{id}
+Authorization: Bearer {token}
+```
+
+#### Update Project
+```http
+PUT /api/projects/{id}
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "name": "Updated Project Name",
+  "description": "Updated description"
+}
+```
+
+**Note:** Only project owner can update project.
+
+#### Archive Project
+```http
+POST /api/projects/{id}/archive
+Authorization: Bearer {token}
+```
+
+**Note:** Only project owner can archive project.
+
+#### Restore Project
+```http
+POST /api/projects/{id}/restore
+Authorization: Bearer {token}
+```
+
+**Note:** Only project owner can restore project.
+
+#### Create Label
+```http
+POST /api/projects/{id}/labels
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "name": "urgent",
+  "color": "#FF0000"
+}
+```
+
+**Note:** Only project owner can create labels.
+
+#### Get Project Labels
+```http
+GET /api/projects/{id}/labels
+Authorization: Bearer {token}
 ```
 
 ## 🔒 Security Features
