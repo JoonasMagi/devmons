@@ -3,7 +3,7 @@ import type { Project, CreateProjectRequest, UpdateProjectRequest } from '../typ
 
 export const projectService = {
   async getMyProjects(): Promise<Project[]> {
-    const response = await api.get<Project[]>('/projects/my');
+    const response = await api.get<Project[]>('/projects');
     return response.data;
   },
 
