@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/devmons
     username: devmons
-    password: devmons
+    password: devmons123
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -30,7 +30,7 @@ spring:
             enable: false
 
 server:
-  port: 8080
+  port: 8081
 
 # JWT Configuration
 jwt:
