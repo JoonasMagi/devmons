@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  mail:
+    host: localhost
+    port: 1025
+
+jwt:
+  secret: test-secret-key-for-testing-minimum-256-bits-required-for-security
+  expiration: 28800000
+
+app:
+  email:
+    verification:
+      expiration: 86400000
+    password-reset:
+      expiration: 86400000
+  security:
+    max-login-attempts: 5
+    lockout-duration: 900000
+
