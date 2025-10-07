@@ -17,6 +17,7 @@ import { issueService } from '../services/issueService';
 import { projectService } from '../services/projectService';
 import { BoardColumn } from '../components/BoardColumn';
 import { IssueCard } from '../components/IssueCard';
+import { IssueDetailModal } from '../components/IssueDetailModal';
 import type { Issue, WorkflowState, Priority } from '../types/issue';
 
 export function Board() {
@@ -30,6 +31,8 @@ export function Board() {
   const [selectedLabels, setSelectedLabels] = useState<number[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedPriorities, setSelectedPriorities] = useState<Priority[]>([]);
+  const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -181,8 +184,13 @@ export function Board() {
   };
 
   const handleIssueClick = (issue: Issue) => {
-    // TODO: Open issue detail modal
-    console.log('Open issue:', issue.key);
+    setSelectedIssueId(issue.id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedIssueId(null);
   };
 
   const handleCreateIssue = (workflowStateId: number) => {
@@ -456,6 +464,13 @@ export function Board() {
           </DndContext>
         )}
       </main>
+
+      {/* Issue Detail Modal */}
+      <IssueDetailModal
+        issueId={selectedIssueId}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
