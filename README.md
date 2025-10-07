@@ -24,11 +24,22 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Create custom labels with colors
 - Project owner permissions and access control
 
+#### User Story #3: Team Member Management
+- Invite users to projects via email
+- Email notifications for invitations
+- Accept/decline project invitations
+- View pending invitations
+- Cancel pending invitations
+- Assign roles to team members (Owner, Member, Viewer)
+- Role-based access control (RBAC)
+- Update member roles
+- Remove members from projects
+- Enforce at least one owner per project
+
 ### 🚧 Planned Features
 - Issue/ticket tracking
 - Kanban board visualization
 - Sprint planning and management
-- Team member invitations
 - Notifications
 - Reporting and analytics
 
@@ -270,14 +281,115 @@ GET /api/projects/{id}/labels
 Authorization: Bearer {token}
 ```
 
+### Team Management API
+
+#### Invite Member to Project
+```http
+POST /api/projects/{projectId}/members/invite
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "email": "user@example.com",
+  "role": "MEMBER"
+}
+```
+
+**Roles:** `OWNER`, `MEMBER`, `VIEWER`
+
+**Note:** Only project owner can invite members.
+
+Response:
+```json
+{
+  "id": 1,
+  "projectId": 1,
+  "projectName": "My Project",
+  "email": "user@example.com",
+  "role": "MEMBER",
+  "status": "PENDING",
+  "invitedByUsername": "johndoe",
+  "createdAt": "2025-10-07T21:00:00",
+  "expiresAt": "2025-10-14T21:00:00",
+  "expired": false
+}
+```
+
+#### Get Pending Invitations
+```http
+GET /api/projects/{projectId}/invitations
+Authorization: Bearer {token}
+```
+
+**Note:** Only project owner can view invitations.
+
+#### Cancel Invitation
+```http
+DELETE /api/invitations/{invitationId}
+Authorization: Bearer {token}
+```
+
+**Note:** Only project owner can cancel invitations.
+
+#### Accept Invitation
+```http
+POST /api/invitations/accept?token={invitationToken}
+Authorization: Bearer {token}
+```
+
+User's email must match the invitation email.
+
+Response:
+```json
+{
+  "id": 2,
+  "userId": 2,
+  "username": "janedoe",
+  "email": "jane@example.com",
+  "fullName": "Jane Doe",
+  "role": "MEMBER",
+  "joinedAt": "2025-10-07T21:00:00"
+}
+```
+
+#### Get Project Members
+```http
+GET /api/projects/{projectId}/members
+Authorization: Bearer {token}
+```
+
+Returns list of all project members. Any project member can view the list.
+
+#### Update Member Role
+```http
+PUT /api/projects/{projectId}/members/{memberId}/role
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "role": "VIEWER"
+}
+```
+
+**Note:** Only project owner can change roles. At least one owner must remain.
+
+#### Remove Member
+```http
+DELETE /api/projects/{projectId}/members/{memberId}
+Authorization: Bearer {token}
+```
+
+**Note:** Only project owner can remove members. Cannot remove the last owner.
+
 ## 🔒 Security Features
 
 - **Password Hashing**: Bcrypt with salt
 - **JWT Tokens**: 8-hour expiration
 - **Account Lockout**: 5 failed attempts → 15-minute lockout
 - **Email Verification**: Required before login
-- **Token Expiration**: 24 hours for verification and reset tokens
+- **Token Expiration**: 24 hours for verification/reset, 7 days for invitations
 - **Input Validation**: Comprehensive validation on all endpoints
+- **Role-Based Access Control**: Owner, Member, and Viewer roles with enforced permissions
 
 ## 📁 Project Structure
 

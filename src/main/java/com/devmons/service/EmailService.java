@@ -39,7 +39,7 @@ public class EmailService {
 
     /**
      * Send password reset link.
-     * 
+     *
      * @param email recipient email
      * @param token reset token
      */
@@ -51,6 +51,26 @@ public class EmailService {
                 resetUrl + "\n\n" +
                 "This link will expire in 24 hours.\n\n" +
                 "If you did not request a password reset, please ignore this email.";
+
+        sendEmail(email, subject, message);
+    }
+
+    /**
+     * Send project invitation email.
+     *
+     * @param email recipient email
+     * @param projectName name of the project
+     * @param inviterName name of the person who sent the invitation
+     * @param token invitation token
+     */
+    public void sendProjectInvitationEmail(String email, String projectName, String inviterName, String token) {
+        String subject = "DevMons - Project Invitation: " + projectName;
+        String invitationUrl = "http://localhost:3000/invitations/accept?token=" + token;
+        String message = inviterName + " has invited you to join the project \"" + projectName + "\" on DevMons.\n\n" +
+                "Please click the link below to accept the invitation:\n" +
+                invitationUrl + "\n\n" +
+                "This invitation will expire in 7 days.\n\n" +
+                "If you do not wish to join this project, you can safely ignore this email.";
 
         sendEmail(email, subject, message);
     }
