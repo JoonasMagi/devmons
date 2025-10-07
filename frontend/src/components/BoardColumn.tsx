@@ -9,9 +9,10 @@ interface BoardColumnProps {
   issues: Issue[];
   onIssueClick: (issue: Issue) => void;
   onCreateIssue: () => void;
+  focusedIssueId?: number;
 }
 
-export function BoardColumn({ workflowState, issues, onIssueClick, onCreateIssue }: BoardColumnProps) {
+export function BoardColumn({ workflowState, issues, onIssueClick, onCreateIssue, focusedIssueId }: BoardColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: workflowState.id,
   });
@@ -48,6 +49,7 @@ export function BoardColumn({ workflowState, issues, onIssueClick, onCreateIssue
               key={issue.id}
               issue={issue}
               onClick={() => onIssueClick(issue)}
+              isFocused={focusedIssueId === issue.id}
             />
           ))}
         </SortableContext>

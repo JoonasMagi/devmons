@@ -32,6 +32,8 @@ export function Board() {
   const [selectedPriorities, setSelectedPriorities] = useState<Priority[]>([]);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [focusedCardIndex, setFocusedCardIndex] = useState<number>(-1);
+  const [scrollPosition, setScrollPosition] = useState<number>(0);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -183,6 +185,8 @@ export function Board() {
   };
 
   const handleIssueClick = (issue: Issue) => {
+    // Save scroll position before opening modal
+    setScrollPosition(window.scrollY);
     setSelectedIssueId(issue.id);
     setIsModalOpen(true);
   };
@@ -190,6 +194,10 @@ export function Board() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedIssueId(null);
+    // Restore scroll position after closing modal
+    setTimeout(() => {
+      window.scrollTo(0, scrollPosition);
+    }, 0);
   };
 
   const handleCreateIssue = (workflowStateId: number) => {
@@ -212,31 +220,73 @@ export function Board() {
     selectedTypes.length > 0 ||
     selectedPriorities.length > 0;
 
+  // Get all visible issues in order (left to right, top to bottom)
+  const allVisibleIssues = useMemo(() => {
+    const issues: Issue[] = [];
+    filteredColumns.forEach((column) => {
+      issues.push(...column.issues);
+    });
+    return issues;
+  }, [filteredColumns]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      const isInputFocused = activeElement?.tagName === 'INPUT' || activeElement?.tagName === 'TEXTAREA';
+
       // / to focus search
       if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         document.getElementById('board-search')?.focus();
+        return;
+      }
+
+      // Skip keyboard navigation if input is focused
+      if (isInputFocused) return;
+
+      // j to navigate down (next card)
+      if (e.key === 'j') {
+        e.preventDefault();
+        const nextIndex = Math.min(focusedCardIndex + 1, allVisibleIssues.length - 1);
+        setFocusedCardIndex(nextIndex);
+        // Scroll to focused card
+        const cardElement = document.querySelector(`[data-issue-id="${allVisibleIssues[nextIndex]?.id}"]`);
+        cardElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // k to navigate up (previous card)
+      if (e.key === 'k') {
+        e.preventDefault();
+        const prevIndex = Math.max(focusedCardIndex - 1, 0);
+        setFocusedCardIndex(prevIndex);
+        // Scroll to focused card
+        const cardElement = document.querySelector(`[data-issue-id="${allVisibleIssues[prevIndex]?.id}"]`);
+        cardElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Enter to open focused card
+      if (e.key === 'Enter' && focusedCardIndex >= 0 && focusedCardIndex < allVisibleIssues.length) {
+        e.preventDefault();
+        const focusedIssue = allVisibleIssues[focusedCardIndex];
+        if (focusedIssue) {
+          handleIssueClick(focusedIssue);
+        }
       }
 
       // c to create new issue
       if (e.key === 'c' && !e.ctrlKey && !e.metaKey) {
-        const activeElement = document.activeElement;
-        if (activeElement?.tagName !== 'INPUT' && activeElement?.tagName !== 'TEXTAREA') {
-          e.preventDefault();
-          // Create in first column
-          if (columns.length > 0) {
-            handleCreateIssue(columns[0].workflowState.id);
-          }
+        e.preventDefault();
+        // Create in first column
+        if (columns.length > 0) {
+          handleCreateIssue(columns[0].workflowState.id);
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [columns]);
+  }, [columns, focusedCardIndex, allVisibleIssues]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -268,7 +318,7 @@ export function Board() {
                 <input
                   id="board-search"
                   type="text"
-                  placeholder="Search issues... (Press / to focus)"
+                  placeholder="Search issues... (/ to focus, j/k to navigate, Enter to open)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition w-80"
@@ -449,6 +499,7 @@ export function Board() {
                   issues={column.issues}
                   onIssueClick={handleIssueClick}
                   onCreateIssue={() => handleCreateIssue(column.workflowState.id)}
+                  focusedIssueId={focusedCardIndex >= 0 ? allVisibleIssues[focusedCardIndex]?.id : undefined}
                 />
               ))}
             </div>

@@ -6,6 +6,7 @@ import type { Issue } from '../types/issue';
 interface IssueCardProps {
   issue: Issue;
   onClick: () => void;
+  isFocused?: boolean;
 }
 
 const issueTypeIcons: Record<string, React.ReactNode> = {
@@ -22,7 +23,7 @@ const priorityColors: Record<string, string> = {
   CRITICAL: 'border-l-red-600',
 };
 
-export function IssueCard({ issue, onClick }: IssueCardProps) {
+export function IssueCard({ issue, onClick, isFocused = false }: IssueCardProps) {
   const {
     attributes,
     listeners,
@@ -45,9 +46,11 @@ export function IssueCard({ issue, onClick }: IssueCardProps) {
       {...attributes}
       {...listeners}
       onClick={onClick}
+      data-issue-id={issue.id}
       className={`
         bg-white rounded-lg shadow-sm border-l-4 ${priorityColors[issue.priority]}
         border-r border-t border-b border-gray-200
+        ${isFocused ? 'ring-2 ring-primary-500 ring-offset-2' : ''}
         p-3 cursor-pointer
         hover:shadow-md transition-shadow duration-200
         ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}
