@@ -3,6 +3,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { Board } from './pages/Board';
+import { ProjectSettings } from './pages/ProjectSettings';
+import { Settings } from './pages/Settings';
+import { MyIssues } from './pages/MyIssues';
 import { authService } from './services/authService';
 
 const queryClient = new QueryClient();
@@ -23,6 +27,38 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/my-issues"
+            element={
+              <PrivateRoute>
+                <MyIssues />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/board"
+            element={
+              <PrivateRoute>
+                <Board />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/settings"
+            element={
+              <PrivateRoute>
+                <ProjectSettings />
               </PrivateRoute>
             }
           />
