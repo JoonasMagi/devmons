@@ -36,10 +36,27 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Remove members from projects
 - Enforce at least one owner per project
 
+#### User Story #4: Issue/Ticket Management
+- Create issues with unique keys (PROJECT-123)
+- Auto-increment issue numbers per project
+- Select issue type (Story, Bug, Task, Epic)
+- Set priority levels (Low, Medium, High, Critical)
+- Assign issues to team members
+- Add story points estimates
+- Set due dates with overdue detection
+- Add multiple labels to issues
+- Edit all issue fields inline
+- Change issue status via workflow states
+- Markdown support in descriptions
+- Complete change history tracking
+- Activity timeline for all changes
+- Reporter automatically set to creator
+
 ### 🚧 Planned Features
-- Issue/ticket tracking
 - Kanban board visualization
 - Sprint planning and management
+- Comments on issues
+- File attachments
 - Notifications
 - Reporting and analytics
 
@@ -380,6 +397,134 @@ Authorization: Bearer {token}
 ```
 
 **Note:** Only project owner can remove members. Cannot remove the last owner.
+
+### Issue Management API
+
+#### Create Issue
+```http
+POST /api/projects/{projectId}/issues
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "title": "Implement user login",
+  "description": "Add JWT-based authentication",
+  "issueTypeId": 1,
+  "priority": "HIGH",
+  "assigneeId": 2,
+  "storyPoints": 5,
+  "dueDate": "2025-10-15",
+  "labelIds": [1, 2]
+}
+```
+
+**Priority values:** `LOW`, `MEDIUM`, `HIGH`, `CRITICAL`
+
+Response:
+```json
+{
+  "id": 1,
+  "key": "PROJ-1",
+  "number": 1,
+  "title": "Implement user login",
+  "description": "Add JWT-based authentication",
+  "projectId": 1,
+  "projectName": "My Project",
+  "projectKey": "PROJ",
+  "issueTypeId": 1,
+  "issueTypeName": "Story",
+  "issueTypeIcon": "📖",
+  "issueTypeColor": "#0052CC",
+  "workflowStateId": 1,
+  "workflowStateName": "Backlog",
+  "workflowStateTerminal": false,
+  "priority": "HIGH",
+  "reporterId": 1,
+  "reporterUsername": "johndoe",
+  "reporterFullName": "John Doe",
+  "assigneeId": 2,
+  "assigneeUsername": "janedoe",
+  "assigneeFullName": "Jane Doe",
+  "storyPoints": 5,
+  "dueDate": "2025-10-15",
+  "overdue": false,
+  "labels": [
+    {
+      "id": 1,
+      "name": "backend",
+      "color": "#FF0000"
+    }
+  ],
+  "createdAt": "2025-10-07T21:00:00",
+  "updatedAt": "2025-10-07T21:00:00"
+}
+```
+
+#### Get Issue by ID
+```http
+GET /api/issues/{id}
+Authorization: Bearer {token}
+```
+
+#### Get Issue by Key
+```http
+GET /api/issues/key/{key}
+Authorization: Bearer {token}
+```
+
+Example: `GET /api/issues/key/PROJ-123`
+
+#### Get All Project Issues
+```http
+GET /api/projects/{projectId}/issues
+Authorization: Bearer {token}
+```
+
+Returns list of all issues for the project, ordered by number descending.
+
+#### Update Issue
+```http
+PUT /api/issues/{id}
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "title": "Updated title",
+  "description": "Updated description",
+  "issueTypeId": 2,
+  "workflowStateId": 3,
+  "priority": "CRITICAL",
+  "assigneeId": 3,
+  "storyPoints": 8,
+  "dueDate": "2025-10-20",
+  "labelIds": [1, 3]
+}
+```
+
+**Note:** All fields are optional. Only provided fields will be updated. All changes are tracked in history.
+
+#### Get Issue History
+```http
+GET /api/issues/{id}/history
+Authorization: Bearer {token}
+```
+
+Returns activity timeline showing all changes made to the issue.
+
+Response:
+```json
+[
+  {
+    "id": 1,
+    "fieldName": "status",
+    "oldValue": "To Do",
+    "newValue": "In Progress",
+    "changedByUsername": "johndoe",
+    "changedByFullName": "John Doe",
+    "changedAt": "2025-10-07T21:30:00"
+  }
+]
+```
 
 ## 🔒 Security Features
 
