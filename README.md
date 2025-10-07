@@ -79,8 +79,30 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Toast notifications for updates
 - Optimistic UI updates
 
+#### User Story #28: Issue Detail Modal UI
+- Modal opens when clicking issue card
+- Full-screen on mobile, centered on desktop
+- Close button (X) and Esc key support
+- Click outside to close with unsaved changes confirmation
+- Smooth open/close animations
+- URL updates with issue key (shareable links)
+- Editable title with inline auto-save
+- Status dropdown (workflow states)
+- Priority dropdown with color indicators
+- Markdown editor for description with preview/edit toggle
+- Story points input
+- Due date picker with overdue indicator
+- Labels display with color chips
+- Reporter display (read-only)
+- Activity timeline with change history
+- Copy link button
+- Delete button with confirmation
+- Keyboard shortcuts (e, Esc)
+- Toast notifications for all actions
+
 ### 🚧 Planned Features
-- Issue detail modal with editing
+- Assignee selector with search
+- Labels multi-select editor
 - Sprint planning and management
 - Comments on issues
 - File attachments
@@ -111,6 +133,9 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **React Hot Toast** - Toast notifications
 - **React Hook Form** - Form management
 - **Lucide React** - Icon library
+- **Headless UI** - Accessible UI components
+- **React Markdown** - Markdown rendering
+- **React DatePicker** - Date picker component
 
 ### Testing
 - **JUnit 5** - Unit testing
