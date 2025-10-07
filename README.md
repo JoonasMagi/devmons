@@ -71,6 +71,16 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **JWT** - Token-based authentication
 - **Maven** - Build tool
 
+### Frontend
+- **React 18** - UI library
+- **TypeScript 5** - Type safety
+- **Vite** - Build tool with Rolldown
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **React Router** - Client-side routing
+- **React Query** - Server state management
+- **Zustand** - Client state management
+- **Axios** - HTTP client
+
 ### Testing
 - **JUnit 5** - Unit testing
 - **Mockito** - Mocking framework
@@ -78,27 +88,34 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 
 ## 📋 Prerequisites
 
+### Backend
 - Java 17 or higher
 - Maven 3.9 or higher
 - PostgreSQL 15
 - SMTP server (for email functionality)
 
+### Frontend
+- Node.js 20 LTS or higher
+- npm or yarn
+
 ## 🚀 Getting Started
 
-### 1. Clone the repository
+### Backend Setup
+
+#### 1. Clone the repository
 ```bash
 git clone https://github.com/JoonasMagi/devmons.git
 cd devmons
 ```
 
-### 2. Set up PostgreSQL database
+#### 2. Set up PostgreSQL database
 ```sql
 CREATE DATABASE devmons;
 CREATE USER devmons WITH PASSWORD 'devmons';
 GRANT ALL PRIVILEGES ON DATABASE devmons TO devmons;
 ```
 
-### 3. Configure application properties
+#### 3. Configure application properties
 Update `src/main/resources/application.yml` with your database and email settings:
 ```yaml
 spring:
@@ -114,23 +131,59 @@ spring:
     password: your_password
 ```
 
-### 4. Set JWT secret (production)
+#### 4. Set JWT secret (production)
 ```bash
 export JWT_SECRET=your-secure-secret-key-minimum-256-bits
 ```
 
-### 5. Build and run
+#### 5. Build and run
 ```bash
 mvn clean install
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080`
+The backend will start on `http://localhost:8080`
+
+### Frontend Setup
+
+#### 1. Navigate to frontend directory
+```bash
+cd frontend
+```
+
+#### 2. Install dependencies
+```bash
+npm install
+```
+
+#### 3. Configure environment
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set your API URL:
+```
+VITE_API_URL=http://localhost:8080/api
+```
+
+#### 4. Start development server
+```bash
+npm run dev
+```
+
+The frontend will start on `http://localhost:5173`
 
 ## 🧪 Running Tests
 
+### Backend Tests
 ```bash
 mvn test
+```
+
+### Frontend Tests
+```bash
+cd frontend
+npm run test
 ```
 
 ## 📚 API Documentation
