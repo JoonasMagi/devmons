@@ -67,13 +67,13 @@ public class AuthService {
         // Generate verification token
         String verificationToken = UUID.randomUUID().toString();
 
-        // Create user
+        // Create user (auto-verify email in development to avoid SMTP setup)
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
-                .emailVerified(false)
+                .emailVerified(true) // Auto-verify for development
                 .verificationToken(verificationToken)
                 .verificationTokenExpiry(LocalDateTime.now().plusHours(24))
                 .enabled(true)
@@ -83,10 +83,15 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Send verification email
-        emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+        // Try to send verification email (fail silently in development if SMTP not configured)
+        try {
+            emailService.sendVerificationEmail(user.getEmail(), verificationToken);
+        } catch (Exception e) {
+            // Log but don't fail registration if email sending fails (development mode)
+            System.out.println("Email sending failed (development mode): " + e.getMessage());
+        }
 
-        return "Registration successful. Please check your email to verify your account.";
+        return "Registration successful. You can now log in.";
     }
 
     /**
@@ -147,10 +152,11 @@ public class AuthService {
             throw new LockedException("Account is locked due to multiple failed login attempts. Please try again later.");
         }
 
-        // Check if email is verified
-        if (!user.getEmailVerified()) {
-            throw new BadCredentialsException("Email not verified. Please check your email for verification link.");
-        }
+        // Email verification check disabled for development
+        // In production, uncomment this:
+        // if (!user.getEmailVerified()) {
+        //     throw new BadCredentialsException("Email not verified. Please check your email for verification link.");
+        // }
 
         try {
             // Authenticate

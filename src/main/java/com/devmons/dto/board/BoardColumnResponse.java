@@ -1,6 +1,6 @@
 package com.devmons.dto.board;
 
-import com.devmons.dto.issue.IssueCardResponse;
+import com.devmons.dto.issue.IssueResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -47,6 +47,6 @@ public class BoardColumnResponse {
     /**
      * Issues in this column
      */
-    private List<IssueCardResponse> issues;
+    private List<IssueResponse> issues;
 }
 
