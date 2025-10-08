@@ -1,5 +1,6 @@
 package com.devmons.service;
 
+import com.devmons.dto.issue.IssueResponse;
 import com.devmons.dto.project.CreateLabelRequest;
 import com.devmons.dto.project.CreateProjectRequest;
 import com.devmons.dto.project.IssueTypeResponse;
@@ -37,6 +38,7 @@ public class ProjectService {
     private final LabelRepository labelRepository;
     private final WorkflowStateRepository workflowStateRepository;
     private final IssueTypeRepository issueTypeRepository;
+    private final IssueRepository issueRepository;
     
     /**
      * Create a new project with default configurations.
@@ -235,15 +237,41 @@ public class ProjectService {
     public List<Label> getProjectLabels(Long projectId, String username) {
         Project project = projectRepository.findById(projectId)
             .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
-        
+
         User user = userRepository.findByUsername(username)
             .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        
+
         if (!hasAccess(project, user)) {
             throw new IllegalArgumentException("User does not have access to this project");
         }
-        
+
         return labelRepository.findByProject(project);
+    }
+
+    /**
+     * Delete a label from project
+     * Only owner can delete labels
+     */
+    @Transactional
+    public void deleteLabel(Long projectId, Long labelId, String username) {
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
+
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        if (!project.isOwner(user)) {
+            throw new IllegalArgumentException("Only project owner can delete labels");
+        }
+
+        Label label = labelRepository.findById(labelId)
+            .orElseThrow(() -> new IllegalArgumentException("Label not found: " + labelId));
+
+        if (!label.getProject().getId().equals(projectId)) {
+            throw new IllegalArgumentException("Label does not belong to this project");
+        }
+
+        labelRepository.delete(label);
     }
     
     /**
@@ -445,6 +473,80 @@ public class ProjectService {
             .id(type.getId())
             .name(type.getName())
             .icon(type.getIcon())
+            .build();
+    }
+
+    /**
+     * Get project backlog (issues not in active sprint, ordered by backlog priority).
+     *
+     * @param projectId Project ID
+     * @param username Username of the requester
+     * @return List of backlog issues
+     */
+    @Transactional(readOnly = true)
+    public List<IssueResponse> getBacklog(Long projectId, String username) {
+        // Find project
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
+
+        // Find user
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        // Check access
+        if (!hasAccess(project, user)) {
+            throw new IllegalArgumentException("User does not have access to this project");
+        }
+
+        // Get issues not in active sprint, ordered by backlog position
+        List<Issue> backlogIssues = issueRepository.findBacklogIssues(project);
+
+        return backlogIssues.stream()
+            .map(this::mapIssueToResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Map Issue entity to IssueResponse DTO
+     */
+    private IssueResponse mapIssueToResponse(Issue issue) {
+        return IssueResponse.builder()
+            .id(issue.getId())
+            .key(issue.getKey())
+            .number(issue.getNumber())
+            .title(issue.getTitle())
+            .description(issue.getDescription())
+            .projectId(issue.getProject().getId())
+            .projectName(issue.getProject().getName())
+            .projectKey(issue.getProject().getKey())
+            .issueTypeId(issue.getIssueType().getId())
+            .issueTypeName(issue.getIssueType().getName())
+            .issueTypeIcon(issue.getIssueType().getIcon())
+            .issueTypeColor(issue.getIssueType().getColor())
+            .workflowStateId(issue.getWorkflowState().getId())
+            .workflowStateName(issue.getWorkflowState().getName())
+            .workflowStateTerminal(issue.getWorkflowState().getTerminal())
+            .priority(issue.getPriority())
+            .reporterId(issue.getReporter().getId())
+            .reporterUsername(issue.getReporter().getUsername())
+            .reporterFullName(issue.getReporter().getFullName())
+            .assigneeId(issue.getAssignee() != null ? issue.getAssignee().getId() : null)
+            .assigneeUsername(issue.getAssignee() != null ? issue.getAssignee().getUsername() : null)
+            .assigneeFullName(issue.getAssignee() != null ? issue.getAssignee().getFullName() : null)
+            .storyPoints(issue.getStoryPoints())
+            .dueDate(issue.getDueDate())
+            .overdue(issue.isOverdue())
+            .labels(issue.getLabels().stream()
+                .map(label -> IssueResponse.LabelInfo.builder()
+                    .id(label.getId())
+                    .name(label.getName())
+                    .color(label.getColor())
+                    .build())
+                .collect(Collectors.toList()))
+            .boardPosition(issue.getBoardPosition())
+            .backlogPosition(issue.getBacklogPosition())
+            .createdAt(issue.getCreatedAt())
+            .updatedAt(issue.getUpdatedAt())
             .build();
     }
 }

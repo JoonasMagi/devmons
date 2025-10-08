@@ -70,5 +70,10 @@ public class UpdateIssueRequest {
      * Board position within workflow state column (for reordering)
      */
     private Integer boardPosition;
+
+    /**
+     * Backlog position for prioritization (for backlog reordering)
+     */
+    private Integer backlogPosition;
 }
 
