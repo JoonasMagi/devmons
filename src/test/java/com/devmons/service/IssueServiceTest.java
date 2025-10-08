@@ -406,5 +406,23 @@ class IssueServiceTest {
         assertEquals("Old Title", historyList.get(0).getOldValue());
         assertEquals("New Title", historyList.get(0).getNewValue());
     }
+
+    @Test
+    void testUpdateIssue_BacklogPosition() {
+        // Arrange
+        UpdateIssueRequest request = new UpdateIssueRequest();
+        request.setBacklogPosition(2500);
+
+        when(issueRepository.findById(1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(issueRepository.save(any(Issue.class))).thenReturn(issue);
+
+        // Act
+        IssueResponse response = issueService.updateIssue(1L, request, "testuser");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(2500, issue.getBacklogPosition());
+    }
 }
 
