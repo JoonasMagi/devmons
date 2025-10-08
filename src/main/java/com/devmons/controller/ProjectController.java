@@ -2,8 +2,10 @@ package com.devmons.controller;
 
 import com.devmons.dto.project.CreateLabelRequest;
 import com.devmons.dto.project.CreateProjectRequest;
+import com.devmons.dto.project.IssueTypeResponse;
 import com.devmons.dto.project.ProjectResponse;
 import com.devmons.dto.project.UpdateProjectRequest;
+import com.devmons.dto.project.WorkflowStateResponse;
 import com.devmons.entity.Label;
 import com.devmons.service.ProjectService;
 import jakarta.validation.Valid;
@@ -27,6 +29,8 @@ import java.util.List;
  * - POST /api/projects/{id}/restore - Restore archived project
  * - POST /api/projects/{id}/labels - Create custom label
  * - GET /api/projects/{id}/labels - Get all labels for project
+ * - GET /api/projects/{id}/workflow-states - Get all workflow states for project
+ * - GET /api/projects/{id}/issue-types - Get all issue types for project
  */
 @RestController
 @RequestMapping("/api/projects")
@@ -163,7 +167,7 @@ public class ProjectController {
     
     /**
      * Get all labels for project.
-     * 
+     *
      * @param id Project ID
      * @param authentication Current authenticated user
      * @return List of labels
@@ -175,6 +179,38 @@ public class ProjectController {
         String username = authentication.getName();
         List<Label> labels = projectService.getProjectLabels(id, username);
         return ResponseEntity.ok(labels);
+    }
+
+    /**
+     * Get all workflow states for project.
+     *
+     * @param id Project ID
+     * @param authentication Current authenticated user
+     * @return List of workflow states
+     */
+    @GetMapping("/{id}/workflow-states")
+    public ResponseEntity<List<WorkflowStateResponse>> getWorkflowStates(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String username = authentication.getName();
+        List<WorkflowStateResponse> states = projectService.getWorkflowStates(id, username);
+        return ResponseEntity.ok(states);
+    }
+
+    /**
+     * Get all issue types for project.
+     *
+     * @param id Project ID
+     * @param authentication Current authenticated user
+     * @return List of issue types
+     */
+    @GetMapping("/{id}/issue-types")
+    public ResponseEntity<List<IssueTypeResponse>> getIssueTypes(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String username = authentication.getName();
+        List<IssueTypeResponse> types = projectService.getIssueTypes(id, username);
+        return ResponseEntity.ok(types);
     }
 }
 

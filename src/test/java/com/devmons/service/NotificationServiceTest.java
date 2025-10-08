@@ -39,7 +39,10 @@ class NotificationServiceTest {
     
     @Mock
     private UserRepository userRepository;
-    
+
+    @Mock
+    private WebSocketService webSocketService;
+
     @InjectMocks
     private NotificationService notificationService;
     
@@ -103,13 +106,29 @@ class NotificationServiceTest {
     void testCreateMentionNotification_Success() {
         // Arrange
         ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
-        
+
+        // Mock repository to return saved notification with ID
+        when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> {
+            Notification n = invocation.getArgument(0);
+            return Notification.builder()
+                .id(1L)
+                .user(n.getUser())
+                .type(n.getType())
+                .message(n.getMessage())
+                .link(n.getLink())
+                .relatedEntityId(n.getRelatedEntityId())
+                .relatedEntityType(n.getRelatedEntityType())
+                .isRead(n.getIsRead())
+                .createdAt(LocalDateTime.now())
+                .build();
+        });
+
         // Act
         notificationService.createMentionNotification(mention, comment);
-        
+
         // Assert
         verify(notificationRepository).save(notificationCaptor.capture());
-        
+
         Notification savedNotification = notificationCaptor.getValue();
         assertEquals(mentionedUser, savedNotification.getUser());
         assertEquals(NotificationType.MENTION, savedNotification.getType());

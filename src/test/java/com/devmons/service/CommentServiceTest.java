@@ -40,6 +40,9 @@ class CommentServiceTest {
     @Mock
     private MentionService mentionService;
 
+    @Mock
+    private WebSocketService webSocketService;
+
     @InjectMocks
     private CommentService commentService;
     

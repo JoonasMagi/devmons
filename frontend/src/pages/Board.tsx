@@ -17,6 +17,7 @@ import { projectService } from '../services/projectService';
 import { BoardColumn } from '../components/BoardColumn';
 import { IssueCard } from '../components/IssueCard';
 import { IssueDetailModal } from '../components/IssueDetailModal';
+import { CreateIssueModal } from '../components/CreateIssueModal';
 import type { Issue, WorkflowState, Priority } from '../types/issue';
 
 export function Board() {
@@ -32,6 +33,8 @@ export function Board() {
   const [selectedPriorities, setSelectedPriorities] = useState<Priority[]>([]);
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createIssueWorkflowStateId, setCreateIssueWorkflowStateId] = useState<number | undefined>();
   const [focusedCardIndex, setFocusedCardIndex] = useState<number>(-1);
   const [scrollPosition, setScrollPosition] = useState<number>(0);
 
@@ -57,6 +60,13 @@ export function Board() {
     enabled: !!projectId,
   });
 
+  // Fetch workflow states
+  const { data: workflowStates = [] } = useQuery({
+    queryKey: ['workflow-states', projectId],
+    queryFn: () => projectService.getWorkflowStates(Number(projectId)),
+    enabled: !!projectId,
+  });
+
   // Update issue mutation
   const updateIssueMutation = useMutation({
     mutationFn: ({ id, workflowStateId }: { id: number; workflowStateId: number }) =>
@@ -73,26 +83,22 @@ export function Board() {
 
   // Group issues by workflow state
   const columns = useMemo(() => {
-    const statesMap = new Map<number, WorkflowState>();
     const issuesByState = new Map<number, Issue[]>();
 
-    // Extract unique workflow states and group issues
+    // Group issues by workflow state
     issues.forEach((issue) => {
-      if (!statesMap.has(issue.workflowState.id)) {
-        statesMap.set(issue.workflowState.id, issue.workflowState);
+      if (!issuesByState.has(issue.workflowState.id)) {
         issuesByState.set(issue.workflowState.id, []);
       }
       issuesByState.get(issue.workflowState.id)!.push(issue);
     });
 
-    // Sort states by order
-    const sortedStates = Array.from(statesMap.values()).sort((a, b) => a.order - b.order);
-
-    return sortedStates.map((state) => ({
+    // Use workflow states from API (already sorted by order)
+    return workflowStates.map((state) => ({
       workflowState: state,
       issues: issuesByState.get(state.id) || [],
     }));
-  }, [issues]);
+  }, [issues, workflowStates]);
 
   // Get unique assignees, labels, and types for filters
   const filterOptions = useMemo(() => {
@@ -201,8 +207,8 @@ export function Board() {
   };
 
   const handleCreateIssue = (workflowStateId: number) => {
-    // TODO: Open create issue modal with pre-selected workflow state
-    console.log('Create issue in state:', workflowStateId);
+    setCreateIssueWorkflowStateId(workflowStateId);
+    setIsCreateModalOpen(true);
   };
 
   const clearFilters = () => {
@@ -520,6 +526,14 @@ export function Board() {
         issueId={selectedIssueId}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+      />
+
+      {/* Create Issue Modal */}
+      <CreateIssueModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        projectId={Number(projectId)}
+        workflowStateId={createIssueWorkflowStateId}
       />
     </div>
   );

@@ -20,6 +20,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
     navigate(`/projects/${project.id}/settings`);
   };
 
+  const handleTeam = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/projects/${project.id}/team`);
+  };
+
   const handleArchive = (e: React.MouseEvent) => {
     e.stopPropagation();
     // TODO: Implement archive
@@ -103,12 +108,19 @@ export function ProjectCard({ project }: ProjectCardProps) {
       </div>
 
       {/* Footer */}
-      <div className="p-6">
+      <div className="p-6 space-y-2">
         <button
           onClick={handleOpenBoard}
           className="w-full px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition font-medium shadow-sm"
         >
           Open Board
+        </button>
+        <button
+          onClick={handleTeam}
+          className="w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium flex items-center justify-center gap-2"
+        >
+          <Users className="w-4 h-4" />
+          Manage Team
         </button>
       </div>
     </div>

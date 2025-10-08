@@ -2,8 +2,10 @@ package com.devmons.service;
 
 import com.devmons.dto.project.CreateLabelRequest;
 import com.devmons.dto.project.CreateProjectRequest;
+import com.devmons.dto.project.IssueTypeResponse;
 import com.devmons.dto.project.ProjectResponse;
 import com.devmons.dto.project.UpdateProjectRequest;
+import com.devmons.dto.project.WorkflowStateResponse;
 import com.devmons.entity.*;
 import com.devmons.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -28,11 +30,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
-    
+
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final UserRepository userRepository;
     private final LabelRepository labelRepository;
+    private final WorkflowStateRepository workflowStateRepository;
+    private final IssueTypeRepository issueTypeRepository;
     
     /**
      * Create a new project with default configurations.
@@ -281,13 +285,73 @@ public class ProjectService {
     }
     
     /**
+     * Get all workflow states for a project.
+     *
+     * @param projectId Project ID
+     * @param username Username of the requester
+     * @return List of workflow states
+     */
+    @Transactional(readOnly = true)
+    public List<WorkflowStateResponse> getWorkflowStates(Long projectId, String username) {
+        // Find project
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
+
+        // Find user
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        // Check access
+        if (!hasAccess(project, user)) {
+            throw new IllegalArgumentException("User does not have access to this project");
+        }
+
+        // Get workflow states ordered by order
+        List<WorkflowState> states = workflowStateRepository.findByProjectOrderByOrderAsc(project);
+
+        return states.stream()
+            .map(this::mapWorkflowStateToResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Get all issue types for a project.
+     *
+     * @param projectId Project ID
+     * @param username Username of the requester
+     * @return List of issue types
+     */
+    @Transactional(readOnly = true)
+    public List<IssueTypeResponse> getIssueTypes(Long projectId, String username) {
+        // Find project
+        Project project = projectRepository.findById(projectId)
+            .orElseThrow(() -> new IllegalArgumentException("Project not found: " + projectId));
+
+        // Find user
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+
+        // Check access
+        if (!hasAccess(project, user)) {
+            throw new IllegalArgumentException("User does not have access to this project");
+        }
+
+        // Get issue types
+        List<IssueType> types = issueTypeRepository.findByProject(project);
+
+        return types.stream()
+            .map(this::mapIssueTypeToResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * Check if user has access to project (is owner or member)
      */
     private boolean hasAccess(Project project, User user) {
-        return project.isOwner(user) || 
+        return project.isOwner(user) ||
                projectMemberRepository.existsByProjectAndUser(project, user);
     }
-    
+
     /**
      * Map Project entity to ProjectResponse DTO
      */
@@ -302,6 +366,29 @@ public class ProjectService {
             .createdAt(project.getCreatedAt())
             .archived(project.getArchived())
             .memberCount(projectMemberRepository.findByProject(project).size())
+            .build();
+    }
+
+    /**
+     * Map WorkflowState entity to WorkflowStateResponse DTO
+     */
+    private WorkflowStateResponse mapWorkflowStateToResponse(WorkflowState state) {
+        return WorkflowStateResponse.builder()
+            .id(state.getId())
+            .name(state.getName())
+            .order(state.getOrder())
+            .terminal(state.getTerminal())
+            .build();
+    }
+
+    /**
+     * Map IssueType entity to IssueTypeResponse DTO
+     */
+    private IssueTypeResponse mapIssueTypeToResponse(IssueType type) {
+        return IssueTypeResponse.builder()
+            .id(type.getId())
+            .name(type.getName())
+            .icon(type.getIcon())
             .build();
     }
 }

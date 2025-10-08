@@ -92,7 +92,8 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Markdown editor for description with preview/edit toggle
 - Story points input
 - Due date picker with overdue indicator
-- Labels display with color chips
+- **Assignee selector with search** - Searchable dropdown to assign issues
+- **Labels multi-select editor** - Add/remove multiple labels
 - Reporter display (read-only)
 - Activity timeline with change history
 - Copy link button
@@ -116,13 +117,21 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Automatic reconnection with heartbeat
 - 39 unit tests (CommentService, MentionService, NotificationService)
 
+#### Additional UI Features
+- **Password Reset Flow** - Forgot password and reset password pages
+- **Project Settings Page** - Edit project details, create custom labels, archive/restore projects
+- **Team Management Page** - Invite members, manage roles, remove members
+- **Create Issue Modal** - Full form with all fields (type, priority, assignee, labels, story points, due date)
+- **Workflow States API** - Fetch workflow states independently for empty projects
+- **Issue Types API** - Fetch issue types independently for empty projects
+
 ### 🚧 Planned Features
-- Assignee selector with search
-- Labels multi-select editor
 - Sprint planning and management
 - Email notifications for mentions
 - File attachments in comments
 - Reporting and analytics
+- Custom workflow configuration UI
+- Custom issue types configuration UI
 
 ## 🛠️ Technology Stack
 

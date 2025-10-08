@@ -424,6 +424,7 @@ public class IssueService {
             .issueTypeColor(issue.getIssueType().getColor())
             .workflowStateId(issue.getWorkflowState().getId())
             .workflowStateName(issue.getWorkflowState().getName())
+            .workflowStateOrder(issue.getWorkflowState().getOrder())
             .workflowStateTerminal(issue.getWorkflowState().getTerminal())
             .priority(issue.getPriority())
             .reporterId(issue.getReporter().getId())

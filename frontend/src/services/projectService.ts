@@ -1,5 +1,6 @@
 import { api } from '../lib/api';
-import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectMember } from '../types/project';
+import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectMember, Label, CreateLabelRequest } from '../types/project';
+import type { WorkflowState, IssueType } from '../types/issue';
 
 export const projectService = {
   async getMyProjects(): Promise<Project[]> {
@@ -32,6 +33,26 @@ export const projectService = {
 
   async getProjectMembers(projectId: number): Promise<ProjectMember[]> {
     const response = await api.get<ProjectMember[]>(`/projects/${projectId}/members`);
+    return response.data;
+  },
+
+  async getProjectLabels(projectId: number): Promise<Label[]> {
+    const response = await api.get<Label[]>(`/projects/${projectId}/labels`);
+    return response.data;
+  },
+
+  async createLabel(projectId: number, data: CreateLabelRequest): Promise<Label> {
+    const response = await api.post<Label>(`/projects/${projectId}/labels`, data);
+    return response.data;
+  },
+
+  async getWorkflowStates(projectId: number): Promise<WorkflowState[]> {
+    const response = await api.get<WorkflowState[]>(`/projects/${projectId}/workflow-states`);
+    return response.data;
+  },
+
+  async getIssueTypes(projectId: number): Promise<IssueType[]> {
+    const response = await api.get<IssueType[]>(`/projects/${projectId}/issue-types`);
     return response.data;
   },
 };

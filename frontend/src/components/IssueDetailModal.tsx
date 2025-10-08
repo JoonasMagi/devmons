@@ -8,9 +8,7 @@ import {
   Bug,
   ListTodo,
   Layers,
-  User,
   Calendar,
-  Tag,
   Clock,
   Link as LinkIcon,
   Trash2,
@@ -21,8 +19,11 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
 import { issueService } from '../services/issueService';
+import { projectService } from '../services/projectService';
 import type { Issue, Priority, UpdateIssueRequest } from '../types/issue';
 import { ActivityTimeline } from './ActivityTimeline';
+import { AssigneeSelector } from './AssigneeSelector';
+import { LabelsSelector } from './LabelsSelector';
 
 interface IssueDetailModalProps {
   issueId: number | null;
@@ -70,7 +71,21 @@ export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalP
   // Fetch workflow states
   const { data: workflowStates = [] } = useQuery({
     queryKey: ['workflow-states', projectId],
-    queryFn: () => issueService.getWorkflowStates(Number(projectId)),
+    queryFn: () => projectService.getWorkflowStates(Number(projectId)),
+    enabled: !!projectId && isOpen,
+  });
+
+  // Fetch project members
+  const { data: members = [] } = useQuery({
+    queryKey: ['project-members', projectId],
+    queryFn: () => projectService.getProjectMembers(Number(projectId)),
+    enabled: !!projectId && isOpen,
+  });
+
+  // Fetch project labels
+  const { data: labels = [] } = useQuery({
+    queryKey: ['project-labels', projectId],
+    queryFn: () => projectService.getProjectLabels(Number(projectId)),
     enabled: !!projectId && isOpen,
   });
 
@@ -337,40 +352,11 @@ export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalP
                           </div>
 
                           {/* Assignee */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              <User className="w-4 h-4 inline mr-1" />
-                              Assignee
-                            </label>
-                            <div className="space-y-2">
-                              {issue.assignee ? (
-                                <div className="flex items-center gap-2 p-2 border border-gray-200 rounded-lg">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center">
-                                    <span className="text-xs text-white font-medium">
-                                      {issue.assignee.fullName.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {issue.assignee.fullName}
-                                    </p>
-                                    <p className="text-xs text-gray-500">{issue.assignee.email}</p>
-                                  </div>
-                                  <button
-                                    onClick={() => updateIssueMutation.mutate({ assigneeId: undefined })}
-                                    className="text-xs text-red-600 hover:text-red-700"
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-400 italic">Unassigned</p>
-                              )}
-                              <p className="text-xs text-gray-500">
-                                Note: Assignee selector requires project members API
-                              </p>
-                            </div>
-                          </div>
+                          <AssigneeSelector
+                            members={members}
+                            selectedUserId={issue.assignee?.id}
+                            onChange={(userId) => updateIssueMutation.mutate({ assigneeId: userId })}
+                          />
 
                           {/* Reporter */}
                           <div>
@@ -430,29 +416,11 @@ export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalP
                           </div>
 
                           {/* Labels */}
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              <Tag className="w-4 h-4 inline mr-1" />
-                              Labels
-                            </label>
-                            <div className="flex flex-wrap gap-1">
-                              {issue.labels.map((label) => (
-                                <span
-                                  key={label.id}
-                                  className="px-2 py-1 text-xs rounded-full"
-                                  style={{
-                                    backgroundColor: `${label.color}20`,
-                                    color: label.color,
-                                  }}
-                                >
-                                  {label.name}
-                                </span>
-                              ))}
-                              {issue.labels.length === 0 && (
-                                <p className="text-sm text-gray-400 italic">No labels</p>
-                              )}
-                            </div>
-                          </div>
+                          <LabelsSelector
+                            labels={labels}
+                            selectedLabelIds={issue.labels.map((l) => l.id)}
+                            onChange={(labelIds) => updateIssueMutation.mutate({ labelIds })}
+                          />
 
                           {/* Timestamps */}
                           <div className="pt-4 border-t border-gray-200">

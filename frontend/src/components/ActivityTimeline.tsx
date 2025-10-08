@@ -347,12 +347,12 @@ export function ActivityTimeline({ projectId, issueId, history }: ActivityTimeli
               <div key={`history-${entry.id}`} className="flex gap-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <span className="text-xs text-white font-medium">
-                    {entry.changedBy.fullName.charAt(0).toUpperCase()}
+                    {entry.changedBy?.fullName?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-900">
-                    <span className="font-medium">{entry.changedBy.fullName}</span>
+                    <span className="font-medium">{entry.changedBy?.fullName || 'Unknown'}</span>
                     {' '}changed{' '}
                     <span className="font-medium">{entry.field}</span>
                     {entry.oldValue && (
