@@ -6,7 +6,7 @@ import type { ProjectMember } from '../types/project';
 interface AssigneeSelectorProps {
   members: ProjectMember[];
   selectedUserId?: number;
-  onChange: (userId: number | undefined) => void;
+  onChange: (userId: number | null) => void;
   disabled?: boolean;
 }
 
@@ -56,7 +56,7 @@ export function AssigneeSelector({ members, selectedUserId, onChange, disabled }
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onChange(undefined);
+                    onChange(null);
                   }}
                   className="p-1 text-gray-400 hover:text-gray-600 rounded"
                 >

@@ -232,7 +232,7 @@ export function ActivityTimeline({ projectId, issueId, history }: ActivityTimeli
 
       {/* Timeline */}
       <div className="space-y-4">
-        {filteredItems.map((item, index) => {
+        {filteredItems.map((item) => {
           if (item.type === 'comment') {
             const comment = item.data;
             const isEditing = editingCommentId === comment.id;

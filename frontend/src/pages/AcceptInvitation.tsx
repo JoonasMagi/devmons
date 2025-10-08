@@ -12,13 +12,13 @@ export function AcceptInvitation() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMessage, setErrorMessage] = useState('');
-  const [projectName, setProjectName] = useState('');
+
 
   const token = searchParams.get('token');
 
   const acceptMutation = useMutation({
     mutationFn: (token: string) => teamService.acceptInvitation(token),
-    onSuccess: (data) => {
+    onSuccess: () => {
       setStatus('success');
       // Redirect to project board after 2 seconds
       setTimeout(() => {

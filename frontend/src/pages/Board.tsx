@@ -10,7 +10,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
-import { ArrowLeft, Settings, Search, Filter, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Settings, Search, Filter, Loader2, X, List } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import { issueService } from '../services/issueService';
 import { projectService } from '../services/projectService';
@@ -18,7 +18,7 @@ import { BoardColumn } from '../components/BoardColumn';
 import { IssueCard } from '../components/IssueCard';
 import { IssueDetailModal } from '../components/IssueDetailModal';
 import { CreateIssueModal } from '../components/CreateIssueModal';
-import type { Issue, WorkflowState, Priority } from '../types/issue';
+import type { Issue, Priority, UpdateIssueRequest } from '../types/issue';
 
 export function Board() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -69,8 +69,8 @@ export function Board() {
 
   // Update issue mutation
   const updateIssueMutation = useMutation({
-    mutationFn: ({ id, workflowStateId }: { id: number; workflowStateId: number }) =>
-      issueService.updateIssue(id, { workflowStateId }),
+    mutationFn: ({ id, ...data }: { id: number } & Partial<UpdateIssueRequest>) =>
+      issueService.updateIssue(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['issues', projectId] });
       toast.success('Issue updated successfully');
@@ -421,6 +421,15 @@ export function Board() {
                   <span className="hidden sm:inline">Clear filters</span>
                 </button>
               )}
+
+              {/* Backlog View */}
+              <button
+                onClick={() => navigate(`/projects/${projectId}/backlog`)}
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              >
+                <List className="w-5 h-5" />
+                <span className="hidden sm:inline">Backlog</span>
+              </button>
 
               {/* Settings */}
               <button

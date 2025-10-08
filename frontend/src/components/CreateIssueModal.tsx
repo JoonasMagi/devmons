@@ -6,16 +6,17 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { issueService } from '../services/issueService';
 import { projectService } from '../services/projectService';
-import type { CreateIssueRequest, Priority } from '../types/issue';
+import type { CreateIssueRequest } from '../types/issue';
 
 interface CreateIssueModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: number;
   workflowStateId?: number;
+  onSuccess?: () => void;
 }
 
-export function CreateIssueModal({ isOpen, onClose, projectId, workflowStateId }: CreateIssueModalProps) {
+export function CreateIssueModal({ isOpen, onClose, projectId, onSuccess }: CreateIssueModalProps) {
   const queryClient = useQueryClient();
   const [showPreview, setShowPreview] = useState(false);
 
@@ -54,9 +55,11 @@ export function CreateIssueModal({ isOpen, onClose, projectId, workflowStateId }
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-issues', projectId] });
       queryClient.invalidateQueries({ queryKey: ['board-issues', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['backlog', projectId] });
       toast.success('Issue created successfully');
       reset();
       onClose();
+      onSuccess?.();
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to create issue');

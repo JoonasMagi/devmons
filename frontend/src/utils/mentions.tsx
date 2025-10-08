@@ -1,6 +1,7 @@
 /**
  * Utility functions for @mention handling.
  */
+import React from 'react';
 
 /**
  * Highlights @mentions in markdown text.
@@ -13,7 +14,7 @@ export function highlightMentions(text: string): string {
   // Match @username (3-50 alphanumeric characters or underscore)
   const mentionPattern = /@([a-zA-Z0-9_]{3,50})/g;
   
-  return text.replace(mentionPattern, (match, username) => {
+  return text.replace(mentionPattern, (_, username) => {
     return `<span class="mention">@${username}</span>`;
   });
 }
@@ -24,16 +25,19 @@ export function highlightMentions(text: string): string {
  */
 export const mentionComponents = {
   // Custom renderer for text nodes to highlight mentions
-  text: ({ children }: { children: string }) => {
+  text: ({ children }: { children?: React.ReactNode }) => {
+    if (typeof children !== 'string') return <>{children}</>;
+
+    const text = children;
     const mentionPattern = /@([a-zA-Z0-9_]{3,50})/g;
-    const parts: (string | JSX.Element)[] = [];
+    const parts: (string | React.ReactElement)[] = [];
     let lastIndex = 0;
     let match;
 
-    while ((match = mentionPattern.exec(children)) !== null) {
+    while ((match = mentionPattern.exec(text)) !== null) {
       // Add text before mention
       if (match.index > lastIndex) {
-        parts.push(children.substring(lastIndex, match.index));
+        parts.push(text.substring(lastIndex, match.index));
       }
 
       // Add mention with styling
@@ -50,11 +54,11 @@ export const mentionComponents = {
     }
 
     // Add remaining text
-    if (lastIndex < children.length) {
-      parts.push(children.substring(lastIndex));
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
     }
 
-    return parts.length > 0 ? <>{parts}</> : <>{children}</>;
+    return parts.length > 0 ? <>{parts}</> : <>{text}</>;
   },
 };
 

@@ -20,7 +20,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
 import { issueService } from '../services/issueService';
 import { projectService } from '../services/projectService';
-import type { Issue, Priority, UpdateIssueRequest } from '../types/issue';
+import type { Priority, UpdateIssueRequest } from '../types/issue';
 import { ActivityTimeline } from './ActivityTimeline';
 import { AssigneeSelector } from './AssigneeSelector';
 import { LabelsSelector } from './LabelsSelector';
@@ -38,12 +38,7 @@ const issueTypeIcons: Record<string, React.ReactNode> = {
   Epic: <ListTodo className="w-5 h-5" />,
 };
 
-const priorityColors: Record<Priority, string> = {
-  LOW: 'bg-gray-100 text-gray-700',
-  MEDIUM: 'bg-yellow-100 text-yellow-700',
-  HIGH: 'bg-orange-100 text-orange-700',
-  CRITICAL: 'bg-red-100 text-red-700',
-};
+
 
 export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalProps) {
   const { projectId } = useParams<{ projectId: string }>();
@@ -355,7 +350,7 @@ export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalP
                           <AssigneeSelector
                             members={members}
                             selectedUserId={issue.assignee?.id}
-                            onChange={(userId) => updateIssueMutation.mutate({ assigneeId: userId })}
+                            onChange={(userId) => updateIssueMutation.mutate({ assigneeId: userId || undefined })}
                           />
 
                           {/* Reporter */}
