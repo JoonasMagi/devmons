@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Settings, Tag, Archive, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, Settings, Tag, Archive, RotateCcw, Save, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { projectService } from '../services/projectService';
@@ -75,6 +75,18 @@ export function ProjectSettings() {
     },
   });
 
+  // Delete label mutation
+  const deleteLabelMutation = useMutation({
+    mutationFn: (labelId: number) => projectService.deleteLabel(Number(projectId), labelId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-labels', projectId] });
+      toast.success('Label deleted');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Failed to delete label');
+    },
+  });
+
   const onSubmit = (data: UpdateProjectRequest) => {
     updateMutation.mutate(data);
   };
@@ -88,6 +100,12 @@ export function ProjectSettings() {
   const handleRestore = () => {
     if (window.confirm('Are you sure you want to restore this project?')) {
       restoreMutation.mutate();
+    }
+  };
+
+  const handleDeleteLabel = (labelId: number, labelName: string) => {
+    if (window.confirm(`Are you sure you want to delete the label "${labelName}"?`)) {
+      deleteLabelMutation.mutate(labelId);
     }
   };
 
@@ -206,17 +224,24 @@ export function ProjectSettings() {
             ) : (
               <div className="flex flex-wrap gap-2">
                 {labels.map((label) => (
-                  <span
+                  <div
                     key={label.id}
-                    className="px-3 py-1.5 rounded-full text-sm font-medium"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium group"
                     style={{
                       backgroundColor: label.color + '20',
                       color: label.color,
                       border: `1px solid ${label.color}`,
                     }}
                   >
-                    {label.name}
-                  </span>
+                    <span>{label.name}</span>
+                    <button
+                      onClick={() => handleDeleteLabel(label.id, label.name)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20 rounded-full p-0.5"
+                      title="Delete label"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
