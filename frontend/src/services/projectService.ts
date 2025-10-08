@@ -1,5 +1,5 @@
 import { api } from '../lib/api';
-import type { Project, CreateProjectRequest, UpdateProjectRequest } from '../types/project';
+import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectMember } from '../types/project';
 
 export const projectService = {
   async getMyProjects(): Promise<Project[]> {
@@ -28,6 +28,11 @@ export const projectService = {
 
   async restoreProject(id: number): Promise<void> {
     await api.post(`/projects/${id}/restore`);
+  },
+
+  async getProjectMembers(projectId: number): Promise<ProjectMember[]> {
+    const response = await api.get<ProjectMember[]>(`/projects/${projectId}/members`);
+    return response.data;
   },
 };
 

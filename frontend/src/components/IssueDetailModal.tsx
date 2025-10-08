@@ -22,6 +22,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import toast from 'react-hot-toast';
 import { issueService } from '../services/issueService';
 import type { Issue, Priority, UpdateIssueRequest } from '../types/issue';
+import { ActivityTimeline } from './ActivityTimeline';
 
 interface IssueDetailModalProps {
   issueId: number | null;
@@ -290,51 +291,8 @@ export function IssueDetailModal({ issueId, isOpen, onClose }: IssueDetailModalP
                             )}
                           </div>
 
-                          {/* Activity Timeline */}
-                          <div>
-                            <h3 className="text-sm font-medium text-gray-700 mb-3">Activity</h3>
-                            <div className="space-y-3">
-                              {history.slice(0, 10).map((entry) => (
-                                <div key={entry.id} className="flex gap-3">
-                                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <span className="text-xs text-white font-medium">
-                                      {entry.changedBy.fullName.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <p className="text-sm text-gray-900">
-                                      <span className="font-medium">{entry.changedBy.fullName}</span>
-                                      {' '}changed{' '}
-                                      <span className="font-medium">{entry.field}</span>
-                                      {entry.oldValue && (
-                                        <>
-                                          {' '}from{' '}
-                                          <span className="text-gray-600">{entry.oldValue}</span>
-                                        </>
-                                      )}
-                                      {entry.newValue && (
-                                        <>
-                                          {' '}to{' '}
-                                          <span className="text-gray-600">{entry.newValue}</span>
-                                        </>
-                                      )}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      {new Date(entry.changedAt).toLocaleString()}
-                                    </p>
-                                  </div>
-                                </div>
-                              ))}
-                              {history.length === 0 && (
-                                <p className="text-sm text-gray-400 italic">No activity yet</p>
-                              )}
-                              {history.length > 10 && (
-                                <button className="text-sm text-primary-600 hover:text-primary-700">
-                                  Show more
-                                </button>
-                              )}
-                            </div>
-                          </div>
+                          {/* Activity Timeline with Comments */}
+                          <ActivityTimeline projectId={Number(projectId)} issueId={issueId!} history={history} />
                         </div>
 
                         {/* Sidebar */}
