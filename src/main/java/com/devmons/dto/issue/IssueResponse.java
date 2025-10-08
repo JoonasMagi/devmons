@@ -47,6 +47,9 @@ public class IssueResponse {
     // Board position
     private Integer boardPosition;
 
+    // Backlog position
+    private Integer backlogPosition;
+
     // People
     private Long reporterId;
     private String reporterUsername;

@@ -1,8 +1,10 @@
 package com.devmons.controller;
 
+import com.devmons.dto.issue.IssueResponse;
 import com.devmons.dto.project.CreateLabelRequest;
 import com.devmons.dto.project.CreateProjectRequest;
 import com.devmons.dto.project.IssueTypeResponse;
+import com.devmons.dto.project.LabelResponse;
 import com.devmons.dto.project.ProjectResponse;
 import com.devmons.dto.project.UpdateProjectRequest;
 import com.devmons.dto.project.WorkflowStateResponse;
@@ -156,13 +158,18 @@ public class ProjectController {
      * @return Created label
      */
     @PostMapping("/{id}/labels")
-    public ResponseEntity<Label> createLabel(
+    public ResponseEntity<LabelResponse> createLabel(
             @PathVariable Long id,
             @Valid @RequestBody CreateLabelRequest request,
             Authentication authentication) {
         String username = authentication.getName();
         Label label = projectService.createLabel(id, request, username);
-        return ResponseEntity.status(HttpStatus.CREATED).body(label);
+        LabelResponse response = LabelResponse.builder()
+            .id(label.getId())
+            .name(label.getName())
+            .color(label.getColor())
+            .build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     /**
@@ -173,12 +180,37 @@ public class ProjectController {
      * @return List of labels
      */
     @GetMapping("/{id}/labels")
-    public ResponseEntity<List<Label>> getProjectLabels(
+    public ResponseEntity<List<LabelResponse>> getProjectLabels(
             @PathVariable Long id,
             Authentication authentication) {
         String username = authentication.getName();
         List<Label> labels = projectService.getProjectLabels(id, username);
-        return ResponseEntity.ok(labels);
+        List<LabelResponse> response = labels.stream()
+            .map(label -> LabelResponse.builder()
+                .id(label.getId())
+                .name(label.getName())
+                .color(label.getColor())
+                .build())
+            .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Delete a label from project.
+     *
+     * @param id Project ID
+     * @param labelId Label ID
+     * @param authentication Current authenticated user
+     * @return No content
+     */
+    @DeleteMapping("/{id}/labels/{labelId}")
+    public ResponseEntity<Void> deleteLabel(
+            @PathVariable Long id,
+            @PathVariable Long labelId,
+            Authentication authentication) {
+        String username = authentication.getName();
+        projectService.deleteLabel(id, labelId, username);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -211,6 +243,22 @@ public class ProjectController {
         String username = authentication.getName();
         List<IssueTypeResponse> types = projectService.getIssueTypes(id, username);
         return ResponseEntity.ok(types);
+    }
+
+    /**
+     * Get project backlog (issues not in active sprint, ordered by backlog priority).
+     *
+     * @param id Project ID
+     * @param authentication Current authenticated user
+     * @return List of backlog issues
+     */
+    @GetMapping("/{id}/backlog")
+    public ResponseEntity<List<IssueResponse>> getBacklog(
+            @PathVariable Long id,
+            Authentication authentication) {
+        String username = authentication.getName();
+        List<IssueResponse> backlog = projectService.getBacklog(id, username);
+        return ResponseEntity.ok(backlog);
     }
 }
 

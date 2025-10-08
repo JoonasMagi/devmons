@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { projectService } from '../services/projectService';
-import type { ProjectMember } from '../types/project';
 
 interface MentionAutocompleteProps {
   projectId: number;

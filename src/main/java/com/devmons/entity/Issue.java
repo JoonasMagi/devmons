@@ -109,6 +109,13 @@ public class Issue {
     private Integer boardPosition;
 
     /**
+     * Position within the project backlog (for prioritization)
+     * Lower values appear first (higher priority)
+     */
+    @Column(name = "backlog_position")
+    private Integer backlogPosition;
+
+    /**
      * User who created the issue (reporter)
      */
     @ManyToOne(fetch = FetchType.LAZY)

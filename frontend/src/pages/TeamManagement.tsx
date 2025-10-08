@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, UserPlus, Mail, Trash2, Shield } from 'lucide-react';
+import { Users, UserPlus, Mail, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { teamService, type ProjectMember, type ProjectInvitation } from '../services/teamService';
 import { InviteMemberModal } from '../components/InviteMemberModal';

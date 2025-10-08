@@ -323,6 +323,11 @@ public class IssueService {
             issue.setBoardPosition(request.getBoardPosition());
         }
 
+        // Update backlog position
+        if (request.getBacklogPosition() != null && !request.getBacklogPosition().equals(issue.getBacklogPosition())) {
+            issue.setBacklogPosition(request.getBacklogPosition());
+        }
+
         // Update due date
         if (request.getDueDate() != null && !request.getDueDate().equals(issue.getDueDate())) {
             changes.add(createHistoryEntry(issue, user, "dueDate",
@@ -442,6 +447,7 @@ public class IssueService {
             .workflowStateTerminal(issue.getWorkflowState().getTerminal())
             .priority(issue.getPriority())
             .boardPosition(issue.getBoardPosition())
+            .backlogPosition(issue.getBacklogPosition())
             .reporterId(issue.getReporter().getId())
             .reporterUsername(issue.getReporter().getUsername())
             .reporterFullName(issue.getReporter().getFullName())

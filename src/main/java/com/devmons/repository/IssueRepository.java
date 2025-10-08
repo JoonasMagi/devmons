@@ -57,5 +57,11 @@ public interface IssueRepository extends JpaRepository<Issue, Long> {
      * Check if issue key exists
      */
     boolean existsByKey(String key);
+
+    /**
+     * Find backlog issues ordered by backlog position
+     */
+    @Query("SELECT i FROM Issue i WHERE i.project = :project ORDER BY COALESCE(i.backlogPosition, 999999), i.createdAt")
+    List<Issue> findBacklogIssues(@Param("project") Project project);
 }
 

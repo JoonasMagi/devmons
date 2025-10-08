@@ -1,10 +1,11 @@
 import { api } from '../lib/api';
-import type { Issue, CreateIssueRequest, UpdateIssueRequest, IssueHistory, WorkflowState } from '../types/issue';
+import type { Issue, CreateIssueRequest, UpdateIssueRequest, IssueHistory } from '../types/issue';
 
 // Transform backend response to frontend Issue type
 const transformIssue = (data: any): Issue => {
   return {
     ...data,
+    projectId: data.projectId,
     issueType: {
       id: data.issueTypeId,
       name: data.issueTypeName,

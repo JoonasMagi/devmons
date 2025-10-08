@@ -6,6 +6,7 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { Dashboard } from './pages/Dashboard';
 import { Board } from './pages/Board';
+import { Backlog } from './pages/Backlog';
 import { ProjectSettings } from './pages/ProjectSettings';
 import { TeamManagement } from './pages/TeamManagement';
 import { AcceptInvitation } from './pages/AcceptInvitation';
@@ -58,6 +59,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Board />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/projects/:projectId/backlog"
+            element={
+              <PrivateRoute>
+                <Backlog />
               </PrivateRoute>
             }
           />

@@ -1,6 +1,6 @@
 import { api } from '../lib/api';
 import type { Project, CreateProjectRequest, UpdateProjectRequest, ProjectMember, Label, CreateLabelRequest } from '../types/project';
-import type { WorkflowState, IssueType } from '../types/issue';
+import type { WorkflowState, IssueType, Issue } from '../types/issue';
 
 export const projectService = {
   async getMyProjects(): Promise<Project[]> {
@@ -46,6 +46,10 @@ export const projectService = {
     return response.data;
   },
 
+  async deleteLabel(projectId: number, labelId: number): Promise<void> {
+    await api.delete(`/projects/${projectId}/labels/${labelId}`);
+  },
+
   async getWorkflowStates(projectId: number): Promise<WorkflowState[]> {
     const response = await api.get<WorkflowState[]>(`/projects/${projectId}/workflow-states`);
     return response.data;
@@ -53,6 +57,11 @@ export const projectService = {
 
   async getIssueTypes(projectId: number): Promise<IssueType[]> {
     const response = await api.get<IssueType[]>(`/projects/${projectId}/issue-types`);
+    return response.data;
+  },
+
+  async getBacklog(projectId: number): Promise<Issue[]> {
+    const response = await api.get<Issue[]>(`/projects/${projectId}/backlog`);
     return response.data;
   },
 };

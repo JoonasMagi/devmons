@@ -39,7 +39,10 @@ export function CreateLabelModal({ isOpen, onClose, projectId }: CreateLabelModa
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-labels', projectId] });
       toast.success('Label created successfully');
-      reset();
+      reset({
+        name: '',
+        color: PRESET_COLORS[0],
+      });
       onClose();
     },
     onError: (error: any) => {
@@ -52,7 +55,10 @@ export function CreateLabelModal({ isOpen, onClose, projectId }: CreateLabelModa
   };
 
   const handleClose = () => {
-    reset();
+    reset({
+      name: '',
+      color: PRESET_COLORS[0],
+    });
     onClose();
   };
 
@@ -145,6 +151,8 @@ export function CreateLabelModal({ isOpen, onClose, projectId }: CreateLabelModa
                     <input
                       {...register('color', { required: 'Color is required' })}
                       type="color"
+                      value={selectedColor}
+                      onChange={(e) => setValue('color', e.target.value)}
                       className="w-full h-10 rounded-lg border border-gray-300 cursor-pointer"
                     />
                     {errors.color && (

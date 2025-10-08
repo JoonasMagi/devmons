@@ -28,10 +28,12 @@ export interface Issue {
   key: string;
   title: string;
   description?: string;
+  projectId: number;
   issueType: IssueType;
   workflowState: WorkflowState;
   priority: Priority;
   boardPosition?: number;
+  backlogPosition?: number;
   assignee?: User;
   reporter: User;
   storyPoints?: number;
@@ -63,6 +65,7 @@ export interface UpdateIssueRequest {
   dueDate?: string;
   labelIds?: number[];
   boardPosition?: number;
+  backlogPosition?: number;
 }
 
 export interface IssueHistory {
