@@ -65,5 +65,10 @@ public class UpdateIssueRequest {
      * Label IDs to assign (replaces existing labels)
      */
     private List<Long> labelIds;
+
+    /**
+     * Board position within workflow state column (for reordering)
+     */
+    private Integer boardPosition;
 }
 

@@ -43,7 +43,10 @@ public class IssueResponse {
     
     // Priority
     private Priority priority;
-    
+
+    // Board position
+    private Integer boardPosition;
+
     // People
     private Long reporterId;
     private String reporterUsername;

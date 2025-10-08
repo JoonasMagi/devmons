@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Response DTO for WorkflowState.
  */
@@ -17,5 +19,6 @@ public class WorkflowStateResponse {
     private String name;
     private Integer order;
     private Boolean terminal;
+    private List<Long> allowedTransitions;
 }
 

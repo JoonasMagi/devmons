@@ -13,6 +13,7 @@ export interface WorkflowState {
   name: string;
   order: number;
   terminal: boolean;
+  allowedTransitions?: number[]; // IDs of states this can transition to
 }
 
 export interface User {
@@ -30,6 +31,7 @@ export interface Issue {
   issueType: IssueType;
   workflowState: WorkflowState;
   priority: Priority;
+  boardPosition?: number;
   assignee?: User;
   reporter: User;
   storyPoints?: number;
@@ -60,6 +62,7 @@ export interface UpdateIssueRequest {
   storyPoints?: number;
   dueDate?: string;
   labelIds?: number[];
+  boardPosition?: number;
 }
 
 export interface IssueHistory {

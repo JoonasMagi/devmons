@@ -121,11 +121,12 @@ export function Board() {
     };
   }, [issues]);
 
-  // Filter issues by search query and filters
+  // Filter and sort issues by search query and filters
   const filteredColumns = useMemo(() => {
     return columns.map((column) => ({
       ...column,
-      issues: column.issues.filter((issue) => {
+      issues: column.issues
+        .filter((issue) => {
         // Search filter
         if (searchQuery.trim()) {
           const query = searchQuery.toLowerCase();
@@ -165,6 +166,15 @@ export function Board() {
         }
 
         return true;
+      })
+      .sort((a, b) => {
+        // Sort by boardPosition if available, otherwise by creation date
+        if (a.boardPosition !== undefined && b.boardPosition !== undefined) {
+          return a.boardPosition - b.boardPosition;
+        }
+        if (a.boardPosition !== undefined) return -1;
+        if (b.boardPosition !== undefined) return 1;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       }),
     }));
   }, [columns, searchQuery, selectedAssignees, selectedLabels, selectedTypes, selectedPriorities]);
@@ -181,13 +191,71 @@ export function Board() {
     if (!over) return;
 
     const issueId = active.id as number;
-    const newWorkflowStateId = over.id as number;
-
     const issue = issues.find((i) => i.id === issueId);
-    if (!issue || issue.workflowState.id === newWorkflowStateId) return;
+    if (!issue) return;
 
-    // Optimistic update
-    updateIssueMutation.mutate({ id: issueId, workflowStateId: newWorkflowStateId });
+    // Check if we're dropping on a workflow state (column) or another issue
+    const isDroppedOnColumn = typeof over.id === 'number' && columns.some(c => c.workflowState.id === over.id);
+
+    if (isDroppedOnColumn) {
+      // Dropping on a different column - change workflow state
+      const newWorkflowStateId = over.id as number;
+
+      if (issue.workflowState.id === newWorkflowStateId) return;
+
+      // Validate workflow transition
+      const currentState = issue.workflowState;
+      const allowedTransitions = currentState.allowedTransitions || [];
+
+      // If allowedTransitions is defined and not empty, validate
+      if (allowedTransitions.length > 0 && !allowedTransitions.includes(newWorkflowStateId)) {
+        const newState = columns.find(c => c.workflowState.id === newWorkflowStateId)?.workflowState;
+        toast.error(`Invalid transition from "${currentState.name}" to "${newState?.name}"`);
+        return;
+      }
+
+      // Optimistic update
+      updateIssueMutation.mutate({ id: issueId, workflowStateId: newWorkflowStateId });
+    } else {
+      // Dropping on another issue - reorder within same column
+      const overIssue = issues.find((i) => i.id === over.id);
+      if (!overIssue || overIssue.workflowState.id !== issue.workflowState.id) return;
+
+      // Calculate new position
+      const columnIssues = issues
+        .filter(i => i.workflowState.id === issue.workflowState.id)
+        .sort((a, b) => {
+          if (a.boardPosition !== undefined && b.boardPosition !== undefined) {
+            return a.boardPosition - b.boardPosition;
+          }
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+
+      const oldIndex = columnIssues.findIndex(i => i.id === issueId);
+      const newIndex = columnIssues.findIndex(i => i.id === over.id);
+
+      if (oldIndex === newIndex) return;
+
+      // Calculate new board position (average of neighbors)
+      let newPosition: number;
+      if (newIndex === 0) {
+        // Moving to top
+        const nextIssue = columnIssues[0];
+        newPosition = (nextIssue.boardPosition || 0) - 1000;
+      } else if (newIndex === columnIssues.length - 1) {
+        // Moving to bottom
+        const prevIssue = columnIssues[columnIssues.length - 1];
+        newPosition = (prevIssue.boardPosition || 0) + 1000;
+      } else {
+        // Moving between two issues
+        const prevIssue = columnIssues[newIndex - 1];
+        const nextIssue = columnIssues[newIndex];
+        newPosition = ((prevIssue.boardPosition || 0) + (nextIssue.boardPosition || 0)) / 2;
+      }
+
+      // Update position
+      updateIssueMutation.mutate({ id: issueId, boardPosition: Math.round(newPosition) });
+    }
   };
 
   const handleIssueClick = (issue: Issue) => {

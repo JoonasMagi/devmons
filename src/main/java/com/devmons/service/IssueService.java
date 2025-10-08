@@ -263,11 +263,20 @@ public class IssueService {
 
         // Update workflow state
         if (request.getWorkflowStateId() != null && !request.getWorkflowStateId().equals(issue.getWorkflowState().getId())) {
+            WorkflowState currentState = issue.getWorkflowState();
             WorkflowState newState = workflowStateRepository.findById(request.getWorkflowStateId())
                 .orElseThrow(() -> new IllegalArgumentException("Workflow state not found: " + request.getWorkflowStateId()));
 
             if (!newState.getProject().getId().equals(issue.getProject().getId())) {
                 throw new IllegalArgumentException("Workflow state does not belong to this project");
+            }
+
+            // Validate workflow transition
+            List<Long> allowedTransitions = currentState.getAllowedTransitionIds();
+            if (!allowedTransitions.isEmpty() && !allowedTransitions.contains(newState.getId())) {
+                throw new IllegalArgumentException(
+                    String.format("Invalid workflow transition from '%s' to '%s'",
+                        currentState.getName(), newState.getName()));
             }
 
             changes.add(createHistoryEntry(issue, user, "status",
@@ -307,6 +316,11 @@ public class IssueService {
                 issue.getStoryPoints() != null ? issue.getStoryPoints().toString() : null,
                 request.getStoryPoints().toString()));
             issue.setStoryPoints(request.getStoryPoints());
+        }
+
+        // Update board position
+        if (request.getBoardPosition() != null && !request.getBoardPosition().equals(issue.getBoardPosition())) {
+            issue.setBoardPosition(request.getBoardPosition());
         }
 
         // Update due date
@@ -427,6 +441,7 @@ public class IssueService {
             .workflowStateOrder(issue.getWorkflowState().getOrder())
             .workflowStateTerminal(issue.getWorkflowState().getTerminal())
             .priority(issue.getPriority())
+            .boardPosition(issue.getBoardPosition())
             .reporterId(issue.getReporter().getId())
             .reporterUsername(issue.getReporter().getUsername())
             .reporterFullName(issue.getReporter().getFullName())

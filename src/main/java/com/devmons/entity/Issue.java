@@ -100,7 +100,14 @@ public class Issue {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private Priority priority = Priority.MEDIUM;
-    
+
+    /**
+     * Position within the workflow state column (for ordering on board)
+     * Lower values appear first
+     */
+    @Column(name = "board_position")
+    private Integer boardPosition;
+
     /**
      * User who created the issue (reporter)
      */

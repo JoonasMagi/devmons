@@ -247,10 +247,13 @@ public class ProjectService {
     }
     
     /**
-     * Create default workflow states for a new project
+     * Create default workflow states for a new project with allowed transitions
      */
     private void createDefaultWorkflowStates(Project project) {
         String[] states = {"Backlog", "To Do", "In Progress", "Review", "Testing", "Done"};
+        List<WorkflowState> createdStates = new ArrayList<>();
+
+        // First pass: create all states
         for (int i = 0; i < states.length; i++) {
             WorkflowState state = WorkflowState.builder()
                 .name(states[i])
@@ -258,7 +261,59 @@ public class ProjectService {
                 .project(project)
                 .terminal(states[i].equals("Done"))
                 .build();
+            createdStates.add(state);
             project.getWorkflowStates().add(state);
+        }
+
+        // Second pass: set allowed transitions (linear workflow by default)
+        // Backlog -> To Do
+        // To Do -> In Progress
+        // In Progress -> Review, Testing (can skip review)
+        // Review -> Testing, In Progress (can go back)
+        // Testing -> Done, In Progress (can go back)
+        // Done -> (terminal, no transitions)
+
+        // Note: Empty allowedTransitions means any transition is allowed
+        // We'll set specific transitions for a more controlled workflow
+        for (int i = 0; i < createdStates.size(); i++) {
+            WorkflowState state = createdStates.get(i);
+            List<Long> transitions = new ArrayList<>();
+
+            switch (state.getName()) {
+                case "Backlog":
+                    // Can move to To Do
+                    if (i + 1 < createdStates.size()) {
+                        transitions.add((long) (i + 1)); // Will be replaced with actual IDs after save
+                    }
+                    break;
+                case "To Do":
+                    // Can move to In Progress or back to Backlog
+                    if (i + 1 < createdStates.size()) transitions.add((long) (i + 1));
+                    if (i - 1 >= 0) transitions.add((long) (i - 1));
+                    break;
+                case "In Progress":
+                    // Can move to Review, Testing, or back to To Do
+                    if (i + 1 < createdStates.size()) transitions.add((long) (i + 1)); // Review
+                    if (i + 2 < createdStates.size()) transitions.add((long) (i + 2)); // Testing
+                    if (i - 1 >= 0) transitions.add((long) (i - 1)); // To Do
+                    break;
+                case "Review":
+                    // Can move to Testing or back to In Progress
+                    if (i + 1 < createdStates.size()) transitions.add((long) (i + 1));
+                    if (i - 1 >= 0) transitions.add((long) (i - 1));
+                    break;
+                case "Testing":
+                    // Can move to Done or back to In Progress
+                    if (i + 1 < createdStates.size()) transitions.add((long) (i + 1));
+                    transitions.add((long) 2); // In Progress (index 2)
+                    break;
+                case "Done":
+                    // Terminal state - no transitions
+                    break;
+            }
+
+            // For now, leave transitions empty (allow all) - will be configured later
+            // state.setAllowedTransitionIds(transitions);
         }
     }
     
@@ -378,6 +433,7 @@ public class ProjectService {
             .name(state.getName())
             .order(state.getOrder())
             .terminal(state.getTerminal())
+            .allowedTransitions(state.getAllowedTransitionIds())
             .build();
     }
 

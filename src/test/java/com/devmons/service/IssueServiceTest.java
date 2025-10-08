@@ -262,23 +262,122 @@ class IssueServiceTest {
             .terminal(false)
             .project(project)
             .build();
-        
+
         UpdateIssueRequest request = new UpdateIssueRequest();
         request.setWorkflowStateId(2L);
-        
+
         when(issueRepository.findById(1L)).thenReturn(Optional.of(issue));
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
         when(workflowStateRepository.findById(2L)).thenReturn(Optional.of(newState));
         when(issueRepository.save(any(Issue.class))).thenReturn(issue);
         when(historyRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
-        
+
         // Act
         IssueResponse response = issueService.updateIssue(1L, request, "testuser");
-        
+
         // Assert
         assertNotNull(response);
         assertEquals(newState, issue.getWorkflowState());
         verify(historyRepository).saveAll(anyList());
+    }
+
+    @Test
+    void testUpdateIssue_WorkflowTransition_Valid() {
+        // Arrange - current state allows transition to new state
+        WorkflowState currentState = WorkflowState.builder()
+            .id(1L)
+            .name("To Do")
+            .order(0)
+            .terminal(false)
+            .project(project)
+            .allowedTransitions("2,3") // Can transition to states 2 and 3
+            .build();
+
+        WorkflowState newState = WorkflowState.builder()
+            .id(2L)
+            .name("In Progress")
+            .order(1)
+            .terminal(false)
+            .project(project)
+            .build();
+
+        issue.setWorkflowState(currentState);
+
+        UpdateIssueRequest request = new UpdateIssueRequest();
+        request.setWorkflowStateId(2L);
+
+        when(issueRepository.findById(1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(workflowStateRepository.findById(2L)).thenReturn(Optional.of(newState));
+        when(issueRepository.save(any(Issue.class))).thenReturn(issue);
+        when(historyRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        IssueResponse response = issueService.updateIssue(1L, request, "testuser");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(newState, issue.getWorkflowState());
+        verify(historyRepository).saveAll(anyList());
+    }
+
+    @Test
+    void testUpdateIssue_WorkflowTransition_Invalid() {
+        // Arrange - current state does NOT allow transition to new state
+        WorkflowState currentState = WorkflowState.builder()
+            .id(1L)
+            .name("To Do")
+            .order(0)
+            .terminal(false)
+            .project(project)
+            .allowedTransitions("2") // Can only transition to state 2
+            .build();
+
+        WorkflowState newState = WorkflowState.builder()
+            .id(5L)
+            .name("Done")
+            .order(5)
+            .terminal(true)
+            .project(project)
+            .build();
+
+        issue.setWorkflowState(currentState);
+
+        UpdateIssueRequest request = new UpdateIssueRequest();
+        request.setWorkflowStateId(5L);
+
+        when(issueRepository.findById(1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(workflowStateRepository.findById(5L)).thenReturn(Optional.of(newState));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            issueService.updateIssue(1L, request, "testuser");
+        });
+
+        assertTrue(exception.getMessage().contains("Invalid workflow transition"));
+        assertTrue(exception.getMessage().contains("To Do"));
+        assertTrue(exception.getMessage().contains("Done"));
+        verify(issueRepository, never()).save(any(Issue.class));
+    }
+
+    @Test
+    void testUpdateIssue_BoardPosition() {
+        // Arrange
+        UpdateIssueRequest request = new UpdateIssueRequest();
+        request.setBoardPosition(100);
+
+        when(issueRepository.findById(1L)).thenReturn(Optional.of(issue));
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+        when(issueRepository.save(any(Issue.class))).thenReturn(issue);
+        when(historyRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        IssueResponse response = issueService.updateIssue(1L, request, "testuser");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(100, issue.getBoardPosition());
     }
     
     @Test
