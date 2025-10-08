@@ -38,6 +38,7 @@ public class IssueResponse {
     
     private Long workflowStateId;
     private String workflowStateName;
+    private Integer workflowStateOrder;
     private Boolean workflowStateTerminal;
     
     // Priority

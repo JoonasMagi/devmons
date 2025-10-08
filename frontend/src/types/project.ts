@@ -32,3 +32,13 @@ export interface CreateLabelRequest {
   color: string;
 }
 
+export interface ProjectMember {
+  id?: number;
+  userId: number;
+  username: string;
+  fullName: string;
+  email: string;
+  role: string;
+  joinedAt?: string;
+}
+

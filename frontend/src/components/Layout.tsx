@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Menu, Search, Bell } from 'lucide-react';
+import { Menu, Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { UserMenu } from './UserMenu';
+import { NotificationBell } from './NotificationBell';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -75,11 +76,7 @@ export function Layout({ children }: LayoutProps) {
                 </button>
 
                 {/* Notifications */}
-                <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition">
-                  <Bell className="w-5 h-5" />
-                  {/* Notification Badge */}
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                <NotificationBell />
 
                 {/* User Menu */}
                 <UserMenu />

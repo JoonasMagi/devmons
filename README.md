@@ -92,7 +92,8 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Markdown editor for description with preview/edit toggle
 - Story points input
 - Due date picker with overdue indicator
-- Labels display with color chips
+- **Assignee selector with search** - Searchable dropdown to assign issues
+- **Labels multi-select editor** - Add/remove multiple labels
 - Reporter display (read-only)
 - Activity timeline with change history
 - Copy link button
@@ -100,14 +101,37 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - Keyboard shortcuts (e, Esc)
 - Toast notifications for all actions
 
+#### User Story #7: Add Comments and Collaborate on Issues
+- Add comments to issues with Markdown support
+- Edit and delete own comments
+- Activity timeline showing comments and system activities
+- Filter timeline (all activity / comments only)
+- Auto-scroll to latest activity
+- @mention autocomplete for team members
+- Mention highlighting in rendered comments
+- Real-time notifications for mentions
+- Notification bell with unread count badge
+- Click notification to navigate to issue
+- Mark notifications as read
+- Real-time updates via WebSocket (STOMP over SockJS)
+- Automatic reconnection with heartbeat
+- 39 unit tests (CommentService, MentionService, NotificationService)
+
+#### Additional UI Features
+- **Password Reset Flow** - Forgot password and reset password pages
+- **Project Settings Page** - Edit project details, create custom labels, archive/restore projects
+- **Team Management Page** - Invite members, manage roles, remove members
+- **Create Issue Modal** - Full form with all fields (type, priority, assignee, labels, story points, due date)
+- **Workflow States API** - Fetch workflow states independently for empty projects
+- **Issue Types API** - Fetch issue types independently for empty projects
+
 ### 🚧 Planned Features
-- Assignee selector with search
-- Labels multi-select editor
 - Sprint planning and management
-- Comments on issues
-- File attachments
-- Real-time updates (WebSocket)
+- Email notifications for mentions
+- File attachments in comments
 - Reporting and analytics
+- Custom workflow configuration UI
+- Custom issue types configuration UI
 
 ## 🛠️ Technology Stack
 
@@ -116,6 +140,7 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **Spring Boot 3.2**
 - **Spring Security** - Authentication and authorization
 - **Spring Data JPA** - Database access
+- **Spring WebSocket** - Real-time updates with STOMP
 - **PostgreSQL 15** - Primary database
 - **JWT** - Token-based authentication
 - **Maven** - Build tool
@@ -124,7 +149,7 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **React 18** - UI library
 - **TypeScript 5** - Type safety
 - **Vite** - Build tool with Rolldown
-- **Tailwind CSS v4** - Utility-first CSS framework
+- **Tailwind CSS v3** - Utility-first CSS framework
 - **React Router** - Client-side routing
 - **React Query** - Server state management
 - **Zustand** - Client state management
@@ -134,8 +159,10 @@ DevMons is a comprehensive project management system similar to Jira/Trello, bui
 - **React Hook Form** - Form management
 - **Lucide React** - Icon library
 - **Headless UI** - Accessible UI components
-- **React Markdown** - Markdown rendering
+- **React Markdown** - Markdown rendering with remark-gfm
 - **React DatePicker** - Date picker component
+- **SockJS Client** - WebSocket client with fallback
+- **@stomp/stompjs** - STOMP protocol for WebSocket
 
 ### Testing
 - **JUnit 5** - Unit testing
@@ -634,6 +661,144 @@ Response:
   }
 ]
 ```
+
+### Comments API
+
+#### Create Comment
+```http
+POST /api/issues/{issueId}/comments
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "content": "This is a comment with @username mention"
+}
+```
+
+Response:
+```json
+{
+  "id": 1,
+  "issueId": 1,
+  "content": "This is a comment with @username mention",
+  "authorId": 1,
+  "authorUsername": "johndoe",
+  "authorFullName": "John Doe",
+  "createdAt": "2025-10-08T10:00:00",
+  "updatedAt": "2025-10-08T10:00:00",
+  "edited": false
+}
+```
+
+#### Get Issue Comments
+```http
+GET /api/issues/{issueId}/comments
+Authorization: Bearer {token}
+```
+
+Returns list of all comments for the issue, ordered by creation date.
+
+#### Update Comment
+```http
+PUT /api/comments/{id}
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "content": "Updated comment content"
+}
+```
+
+**Note:** Only comment author can update their own comments.
+
+#### Delete Comment
+```http
+DELETE /api/comments/{id}
+Authorization: Bearer {token}
+```
+
+**Note:** Only comment author can delete their own comments.
+
+### Notifications API
+
+#### Get User Notifications
+```http
+GET /api/notifications
+Authorization: Bearer {token}
+```
+
+Returns list of all notifications for the authenticated user, ordered by creation date descending.
+
+Response:
+```json
+[
+  {
+    "id": 1,
+    "type": "MENTION",
+    "message": "johndoe mentioned you in PROJ-123",
+    "issueId": 1,
+    "issueKey": "PROJ-123",
+    "read": false,
+    "createdAt": "2025-10-08T10:00:00"
+  }
+]
+```
+
+#### Get Unread Count
+```http
+GET /api/notifications/unread-count
+Authorization: Bearer {token}
+```
+
+Response:
+```json
+{
+  "count": 5
+}
+```
+
+#### Mark Notification as Read
+```http
+POST /api/notifications/{id}/read
+Authorization: Bearer {token}
+```
+
+#### Mark All Notifications as Read
+```http
+POST /api/notifications/read-all
+Authorization: Bearer {token}
+```
+
+### WebSocket API
+
+#### Connect to WebSocket
+```javascript
+const socket = new SockJS('http://localhost:8081/ws');
+const stompClient = Stomp.over(socket);
+
+stompClient.connect({
+  Authorization: `Bearer ${token}`
+}, () => {
+  // Subscribe to issue updates
+  stompClient.subscribe('/topic/issues/123', (message) => {
+    const data = JSON.parse(message.body);
+    console.log('Received:', data);
+  });
+
+  // Subscribe to user notifications
+  stompClient.subscribe('/topic/users/johndoe/notifications', (message) => {
+    const data = JSON.parse(message.body);
+    console.log('Notification:', data);
+  });
+});
+```
+
+**Message Types:**
+- `COMMENT_ADDED` - New comment added to issue
+- `COMMENT_UPDATED` - Comment edited
+- `COMMENT_DELETED` - Comment deleted
+- `ISSUE_UPDATED` - Issue fields updated
+- `NOTIFICATION_CREATED` - New notification for user
 
 ## 🔒 Security Features
 
